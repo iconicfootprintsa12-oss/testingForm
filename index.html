@@ -164,6 +164,12 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
+            background: #3498db;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
         }
 
         .admin-tabs {
@@ -257,6 +263,11 @@
             background: #219a52;
         }
 
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 14px;
+        }
+
         /* Tables */
         .data-table {
             width: 100%;
@@ -265,6 +276,7 @@
             border-radius: 8px;
             overflow: hidden;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-top: 20px;
         }
 
         .data-table th {
@@ -319,7 +331,7 @@
 
         .modal-header {
             display: flex;
-            justify-content: between;
+            justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
         }
@@ -345,6 +357,7 @@
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            background: white;
         }
 
         .gallery-item img {
@@ -364,6 +377,10 @@
             right: 10px;
             display: flex;
             gap: 5px;
+        }
+
+        .gallery-content {
+            padding: 15px;
         }
 
         /* Utility Classes */
@@ -404,6 +421,26 @@
             100% { transform: rotate(360deg); }
         }
 
+        /* Message Styles */
+        .message {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
         /* Responsive */
         @media (max-width: 768px) {
             .nav-links {
@@ -426,6 +463,10 @@
             .admin-tab {
                 flex: 1;
                 min-width: 120px;
+            }
+            
+            .data-table {
+                font-size: 14px;
             }
         }
     </style>
@@ -474,9 +515,11 @@
         <!-- About Page -->
         <div id="about" class="page">
             <h2>About Us</h2>
-            <p>This is the about page content. Admins can edit this content from their dashboard.</p>
             <div id="aboutContent">
-                <p>Welcome to our website! We are dedicated to providing excellent services...</p>
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading about content...
+                </div>
             </div>
         </div>
 
@@ -485,7 +528,10 @@
             <h2>Gallery</h2>
             <p>Explore our amazing collection of images and media.</p>
             <div class="gallery-grid" id="publicGallery">
-                <!-- Gallery items will be loaded here -->
+                <div class="loading">
+                    <div class="spinner"></div>
+                    Loading gallery...
+                </div>
             </div>
         </div>
 
@@ -507,6 +553,7 @@
                 </div>
                 <button type="submit" class="btn btn-primary">Send Message</button>
             </form>
+            <div id="contactMessage" class="message" style="display: none;"></div>
         </div>
 
         <!-- Admin Panel -->
@@ -515,7 +562,7 @@
                 <div class="admin-header">
                     <h2>Admin Dashboard</h2>
                     <div class="user-info">
-                        <img id="userAvatar" class="user-avatar" src="" alt="Admin">
+                        <div class="user-avatar" id="userAvatar">A</div>
                         <span id="userName">Admin</span>
                         <button class="btn btn-danger" id="logoutBtn">Logout</button>
                     </div>
@@ -531,31 +578,27 @@
                 <div id="contactsTab" class="tab-content active">
                     <h3>Contact Submissions</h3>
                     <div class="form-group">
-                        <input type="text" id="searchContacts" placeholder="Search contacts...">
+                        <input type="text" id="searchContacts" placeholder="Search contacts by name, email, or message...">
                     </div>
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Message</th>
-                                <th>Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="contactsTable">
-                            <!-- Contacts will be loaded here -->
-                        </tbody>
-                    </table>
+                    <div id="contactsTableContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Loading contacts...
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Gallery Tab -->
                 <div id="galleryTab" class="tab-content">
+                    <h3>Gallery Management</h3>
                     <div class="form-group">
                         <button class="btn btn-primary" id="addImageBtn">Add New Image</button>
                     </div>
-                    <div class="gallery-grid" id="adminGallery">
-                        <!-- Admin gallery items will be loaded here -->
+                    <div id="adminGalleryContainer">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            Loading gallery...
+                        </div>
                     </div>
                 </div>
 
@@ -565,14 +608,15 @@
                     <form id="aboutForm">
                         <div class="form-group">
                             <label for="aboutTitle">Title:</label>
-                            <input type="text" id="aboutTitle" name="title">
+                            <input type="text" id="aboutTitle" name="title" required>
                         </div>
                         <div class="form-group">
                             <label for="aboutContent">Content:</label>
-                            <textarea id="aboutContent" name="content" rows="10"></textarea>
+                            <textarea id="aboutContentEditor" name="content" rows="10" required></textarea>
                         </div>
                         <button type="submit" class="btn btn-success">Save Changes</button>
                     </form>
+                    <div id="aboutMessage" class="message" style="display: none;"></div>
                 </div>
             </div>
         </div>
@@ -594,12 +638,13 @@
                     <label for="authPassword">Password:</label>
                     <input type="password" id="authPassword" required>
                 </div>
-                <div class="form-group">
-                    <label for="authName" id="nameLabel" class="hidden">Full Name:</label>
-                    <input type="text" id="authName" class="hidden">
+                <div class="form-group hidden" id="nameFieldGroup">
+                    <label for="authName">Full Name:</label>
+                    <input type="text" id="authName">
                 </div>
                 <button type="submit" class="btn btn-primary" id="authSubmitBtn">Login</button>
             </form>
+            <div id="authMessage" class="message" style="display: none;"></div>
         </div>
     </div>
 
@@ -622,9 +667,11 @@
                 <div class="form-group">
                     <label for="imageUrl">Image URL:</label>
                     <input type="url" id="imageUrl" required placeholder="https://example.com/image.jpg">
+                    <small>You can use image URLs from services like Imgur, Unsplash, etc.</small>
                 </div>
                 <button type="submit" class="btn btn-success">Add Image</button>
             </form>
+            <div id="imageMessage" class="message" style="display: none;"></div>
         </div>
     </div>
 
@@ -685,14 +732,14 @@
         const authModalTitle = document.getElementById('authModalTitle');
         const authSubmitBtn = document.getElementById('authSubmitBtn');
         const authName = document.getElementById('authName');
-        const nameLabel = document.getElementById('nameLabel');
+        const nameFieldGroup = document.getElementById('nameFieldGroup');
         const closeModalBtns = document.querySelectorAll('.close-modal');
         const logoutBtn = document.getElementById('logoutBtn');
         const contactForm = document.getElementById('contactForm');
         const adminTabs = document.querySelectorAll('.admin-tab');
         const tabContents = document.querySelectorAll('.tab-content');
-        const contactsTable = document.getElementById('contactsTable');
-        const adminGallery = document.getElementById('adminGallery');
+        const contactsTableContainer = document.getElementById('contactsTableContainer');
+        const adminGalleryContainer = document.getElementById('adminGalleryContainer');
         const publicGallery = document.getElementById('publicGallery');
         const aboutForm = document.getElementById('aboutForm');
         const aboutContent = document.getElementById('aboutContent');
@@ -700,69 +747,125 @@
         const imageForm = document.getElementById('imageForm');
         const addImageBtn = document.getElementById('addImageBtn');
         const searchContacts = document.getElementById('searchContacts');
+        const contactMessage = document.getElementById('contactMessage');
+        const authMessage = document.getElementById('authMessage');
+        const imageMessage = document.getElementById('imageMessage');
+        const aboutMessage = document.getElementById('aboutMessage');
 
         let currentAuthMode = 'login';
         let currentUser = null;
+        let allContacts = [];
 
-        // Navigation
-        navLinks.forEach(link => {
-            link.addEventListener('click', (e) => {
-                e.preventDefault();
-                const page = link.getAttribute('data-page');
-                showPage(page);
-                
-                // Update active nav link
-                navLinks.forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
+        // Initialize the application
+        function init() {
+            loadPublicContent();
+            setupEventListeners();
+        }
+
+        function setupEventListeners() {
+            // Navigation
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const page = link.getAttribute('data-page');
+                    showPage(page);
+                    
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                });
             });
-        });
+
+            // Auth Modal
+            showLoginBtn.addEventListener('click', () => {
+                currentAuthMode = 'login';
+                showAuthModal('Login');
+            });
+
+            showRegisterBtn.addEventListener('click', () => {
+                currentAuthMode = 'register';
+                showAuthModal('Register');
+            });
+
+            closeModalBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    authModal.classList.remove('active');
+                    imageModal.classList.remove('active');
+                });
+            });
+
+            // Auth Form
+            authForm.addEventListener('submit', handleAuth);
+
+            // Logout
+            logoutBtn.addEventListener('click', handleLogout);
+
+            // Contact Form
+            contactForm.addEventListener('submit', handleContactSubmit);
+
+            // Admin Tabs
+            adminTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    
+                    adminTabs.forEach(t => t.classList.remove('active'));
+                    tabContents.forEach(t => t.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(tabId + 'Tab').classList.add('active');
+                });
+            });
+
+            // Image Management
+            addImageBtn.addEventListener('click', () => {
+                imageModal.classList.add('active');
+                imageForm.reset();
+            });
+
+            imageForm.addEventListener('submit', handleImageSubmit);
+
+            // Search
+            searchContacts.addEventListener('input', handleSearchContacts);
+
+            // About Form
+            aboutForm.addEventListener('submit', handleAboutSubmit);
+        }
 
         function showPage(page) {
             Object.values(pages).forEach(p => p.classList.remove('active'));
             pages[page].classList.add('active');
+            
+            if (page === 'gallery') {
+                loadPublicGallery();
+            } else if (page === 'about') {
+                loadPublicAbout();
+            }
         }
-
-        // Auth Modal
-        showLoginBtn.addEventListener('click', () => {
-            currentAuthMode = 'login';
-            showAuthModal('Login');
-        });
-
-        showRegisterBtn.addEventListener('click', () => {
-            currentAuthMode = 'register';
-            showAuthModal('Register');
-        });
 
         function showAuthModal(title) {
             authModalTitle.textContent = `Admin ${title}`;
             authSubmitBtn.textContent = title;
             
             if (currentAuthMode === 'register') {
-                authName.classList.remove('hidden');
-                nameLabel.classList.remove('hidden');
+                nameFieldGroup.classList.remove('hidden');
+                authName.required = true;
             } else {
-                authName.classList.add('hidden');
-                nameLabel.classList.add('hidden');
+                nameFieldGroup.classList.add('hidden');
+                authName.required = false;
             }
             
             authModal.classList.add('active');
             authForm.reset();
+            hideMessage(authMessage);
         }
 
-        closeModalBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                authModal.classList.remove('active');
-                imageModal.classList.remove('active');
-            });
-        });
-
-        // Auth Form
-        authForm.addEventListener('submit', async (e) => {
+        async function handleAuth(e) {
             e.preventDefault();
             
             const email = document.getElementById('authEmail').value;
             const password = document.getElementById('authPassword').value;
             const name = document.getElementById('authName').value;
+
+            showLoading(authSubmitBtn);
 
             try {
                 if (currentAuthMode === 'register') {
@@ -770,42 +873,35 @@
                     await updateProfile(userCredential.user, {
                         displayName: name
                     });
-                    alert('Registration successful!');
+                    showMessage(authMessage, 'Registration successful!', 'success');
                 } else {
                     await signInWithEmailAndPassword(auth, email, password);
-                    alert('Login successful!');
+                    showMessage(authMessage, 'Login successful!', 'success');
                 }
                 
-                authModal.classList.remove('active');
-                authForm.reset();
+                setTimeout(() => {
+                    authModal.classList.remove('active');
+                    authForm.reset();
+                }, 1500);
             } catch (error) {
-                alert(`Auth error: ${error.message}`);
+                showMessage(authMessage, `Error: ${error.message}`, 'error');
+            } finally {
+                hideLoading(authSubmitBtn, currentAuthMode === 'register' ? 'Register' : 'Login');
             }
-        });
+        }
 
-        // Logout
-        logoutBtn.addEventListener('click', async () => {
+        async function handleLogout() {
             try {
                 await signOut(auth);
                 showPage('home');
+                navLinks.forEach(l => l.classList.remove('active'));
+                document.querySelector('[data-page="home"]').classList.add('active');
             } catch (error) {
-                alert('Logout error: ' + error.message);
+                console.error('Logout error:', error);
             }
-        });
+        }
 
-        // Auth State Observer
-        onAuthStateChanged(auth, (user) => {
-            currentUser = user;
-            if (user) {
-                document.getElementById('userName').textContent = user.displayName || user.email;
-                document.getElementById('userAvatar').src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.displayName || user.email);
-                showPage('admin');
-                loadAdminData();
-            }
-        });
-
-        // Contact Form
-        contactForm.addEventListener('submit', async (e) => {
+        async function handleContactSubmit(e) {
             e.preventDefault();
             
             const formData = {
@@ -815,162 +911,21 @@
                 timestamp: new Date()
             };
 
+            const submitBtn = contactForm.querySelector('button[type="submit"]');
+            showLoading(submitBtn);
+
             try {
                 await addDoc(collection(db, "contacts"), formData);
-                alert('Message sent successfully!');
+                showMessage(contactMessage, 'Message sent successfully!', 'success');
                 contactForm.reset();
             } catch (error) {
-                alert('Error sending message: ' + error.message);
-            }
-        });
-
-        // Admin Tabs
-        adminTabs.forEach(tab => {
-            tab.addEventListener('click', () => {
-                const tabId = tab.getAttribute('data-tab');
-                
-                adminTabs.forEach(t => t.classList.remove('active'));
-                tabContents.forEach(t => t.classList.remove('active'));
-                
-                tab.classList.add('active');
-                document.getElementById(tabId + 'Tab').classList.add('active');
-            });
-        });
-
-        // Load Admin Data
-        async function loadAdminData() {
-            await loadContacts();
-            await loadGallery();
-            await loadAboutContent();
-        }
-
-        // Contacts Management
-        async function loadContacts() {
-            try {
-                const q = query(collection(db, "contacts"), orderBy("timestamp", "desc"));
-                const querySnapshot = await getDocs(q);
-                
-                contactsTable.innerHTML = '';
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${escapeHtml(data.name)}</td>
-                        <td>${escapeHtml(data.email)}</td>
-                        <td>${escapeHtml(data.message)}</td>
-                        <td>${formatDate(data.timestamp?.toDate())}</td>
-                        <td class="action-buttons">
-                            <button class="btn btn-danger btn-sm" onclick="deleteContact('${doc.id}')">Delete</button>
-                        </td>
-                    `;
-                    contactsTable.appendChild(row);
-                });
-            } catch (error) {
-                console.error('Error loading contacts:', error);
+                showMessage(contactMessage, 'Error sending message: ' + error.message, 'error');
+            } finally {
+                hideLoading(submitBtn, 'Send Message');
             }
         }
 
-        // Search Contacts
-        searchContacts.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const rows = contactsTable.getElementsByTagName('tr');
-            
-            for (let row of rows) {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
-            }
-        });
-
-        // Gallery Management
-        async function loadGallery() {
-            try {
-                const q = query(collection(db, "gallery"), orderBy("createdAt", "desc"));
-                const querySnapshot = await getDocs(q);
-                
-                adminGallery.innerHTML = '';
-                publicGallery.innerHTML = '';
-                
-                querySnapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const galleryItem = createGalleryItem(doc.id, data);
-                    adminGallery.appendChild(galleryItem.cloneNode(true));
-                    publicGallery.appendChild(galleryItem);
-                });
-            } catch (error) {
-                console.error('Error loading gallery:', error);
-            }
-        }
-
-        function createGalleryItem(id, data) {
-            const div = document.createElement('div');
-            div.className = 'gallery-item';
-            div.innerHTML = `
-                <img src="${data.imageUrl}" alt="${data.title}">
-                <div class="gallery-actions">
-                    <button class="btn btn-danger btn-sm" onclick="deleteImage('${id}')">Delete</button>
-                </div>
-                <div style="padding: 10px;">
-                    <h4>${escapeHtml(data.title)}</h4>
-                    <p>${escapeHtml(data.description)}</p>
-                </div>
-            `;
-            return div;
-        }
-
-        // About Content Management
-        async function loadAboutContent() {
-            try {
-                const querySnapshot = await getDocs(collection(db, "about"));
-                if (!querySnapshot.empty) {
-                    const doc = querySnapshot.docs[0];
-                    const data = doc.data();
-                    document.getElementById('aboutTitle').value = data.title || '';
-                    document.getElementById('aboutContent').value = data.content || '';
-                    
-                    // Update public about page
-                    aboutContent.innerHTML = `
-                        <h3>${escapeHtml(data.title)}</h3>
-                        <p>${escapeHtml(data.content)}</p>
-                    `;
-                }
-            } catch (error) {
-                console.error('Error loading about content:', error);
-            }
-        }
-
-        aboutForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const aboutData = {
-                title: document.getElementById('aboutTitle').value,
-                content: document.getElementById('aboutContent').value,
-                updatedAt: new Date(),
-                updatedBy: currentUser.email
-            };
-
-            try {
-                const querySnapshot = await getDocs(collection(db, "about"));
-                if (querySnapshot.empty) {
-                    await addDoc(collection(db, "about"), aboutData);
-                } else {
-                    const docId = querySnapshot.docs[0].id;
-                    await updateDoc(doc(db, "about", docId), aboutData);
-                }
-                
-                alert('About content updated successfully!');
-                loadAboutContent();
-            } catch (error) {
-                alert('Error updating about content: ' + error.message);
-            }
-        });
-
-        // Image Management
-        addImageBtn.addEventListener('click', () => {
-            imageModal.classList.add('active');
-            imageForm.reset();
-        });
-
-        imageForm.addEventListener('submit', async (e) => {
+        async function handleImageSubmit(e) {
             e.preventDefault();
             
             const imageData = {
@@ -981,22 +936,246 @@
                 createdBy: currentUser.email
             };
 
+            const submitBtn = imageForm.querySelector('button[type="submit"]');
+            showLoading(submitBtn);
+
             try {
                 await addDoc(collection(db, "gallery"), imageData);
-                alert('Image added successfully!');
-                imageModal.classList.remove('active');
-                loadGallery();
+                showMessage(imageMessage, 'Image added successfully!', 'success');
+                setTimeout(() => {
+                    imageModal.classList.remove('active');
+                    loadAdminGallery();
+                    loadPublicGallery();
+                }, 1500);
             } catch (error) {
-                alert('Error adding image: ' + error.message);
+                showMessage(imageMessage, 'Error adding image: ' + error.message, 'error');
+            } finally {
+                hideLoading(submitBtn, 'Add Image');
             }
-        });
+        }
+
+        async function handleAboutSubmit(e) {
+            e.preventDefault();
+            
+            const aboutData = {
+                title: document.getElementById('aboutTitle').value,
+                content: document.getElementById('aboutContentEditor').value,
+                updatedAt: new Date(),
+                updatedBy: currentUser.email
+            };
+
+            const submitBtn = aboutForm.querySelector('button[type="submit"]');
+            showLoading(submitBtn);
+
+            try {
+                const querySnapshot = await getDocs(collection(db, "about"));
+                if (querySnapshot.empty) {
+                    await addDoc(collection(db, "about"), aboutData);
+                } else {
+                    const docId = querySnapshot.docs[0].id;
+                    await updateDoc(doc(db, "about", docId), aboutData);
+                }
+                
+                showMessage(aboutMessage, 'About content updated successfully!', 'success');
+                loadPublicAbout();
+            } catch (error) {
+                showMessage(aboutMessage, 'Error updating about content: ' + error.message, 'error');
+            } finally {
+                hideLoading(submitBtn, 'Save Changes');
+            }
+        }
+
+        function handleSearchContacts(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredContacts = allContacts.filter(contact => 
+                contact.name.toLowerCase().includes(searchTerm) ||
+                contact.email.toLowerCase().includes(searchTerm) ||
+                contact.message.toLowerCase().includes(searchTerm)
+            );
+            renderContactsTable(filteredContacts);
+        }
+
+        // Data Loading Functions
+        async function loadPublicContent() {
+            await loadPublicGallery();
+            await loadPublicAbout();
+        }
+
+        async function loadPublicGallery() {
+            try {
+                const q = query(collection(db, "gallery"), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    publicGallery.innerHTML = '<div class="text-center">No images found in gallery.</div>';
+                    return;
+                }
+
+                publicGallery.innerHTML = '';
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const galleryItem = createGalleryItem(doc.id, data, false);
+                    publicGallery.appendChild(galleryItem);
+                });
+            } catch (error) {
+                console.error('Error loading public gallery:', error);
+                publicGallery.innerHTML = '<div class="text-center">Error loading gallery.</div>';
+            }
+        }
+
+        async function loadPublicAbout() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "about"));
+                if (!querySnapshot.empty) {
+                    const doc = querySnapshot.docs[0];
+                    const data = doc.data();
+                    aboutContent.innerHTML = `
+                        <h3>${escapeHtml(data.title)}</h3>
+                        <p>${escapeHtml(data.content).replace(/\n/g, '<br>')}</p>
+                    `;
+                } else {
+                    aboutContent.innerHTML = `
+                        <h3>About Our Company</h3>
+                        <p>Welcome to our website! We are dedicated to providing excellent services and creating amazing experiences for our customers.</p>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading about content:', error);
+                aboutContent.innerHTML = '<div class="text-center">Error loading about content.</div>';
+            }
+        }
+
+        async function loadAdminData() {
+            await loadContacts();
+            await loadAdminGallery();
+            await loadAboutForm();
+        }
+
+        async function loadContacts() {
+            try {
+                const q = query(collection(db, "contacts"), orderBy("timestamp", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                allContacts = [];
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    allContacts.push({
+                        id: doc.id,
+                        name: data.name || 'N/A',
+                        email: data.email || 'N/A',
+                        message: data.message || 'N/A',
+                        timestamp: data.timestamp?.toDate() || new Date()
+                    });
+                });
+
+                renderContactsTable(allContacts);
+            } catch (error) {
+                console.error('Error loading contacts:', error);
+                contactsTableContainer.innerHTML = '<div class="text-center">Error loading contacts.</div>';
+            }
+        }
+
+        function renderContactsTable(contacts) {
+            if (contacts.length === 0) {
+                contactsTableContainer.innerHTML = '<div class="text-center">No contacts found.</div>';
+                return;
+            }
+
+            let tableHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Message</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            contacts.forEach(contact => {
+                tableHTML += `
+                    <tr>
+                        <td>${escapeHtml(contact.name)}</td>
+                        <td>${escapeHtml(contact.email)}</td>
+                        <td>${escapeHtml(contact.message)}</td>
+                        <td>${formatDate(contact.timestamp)}</td>
+                        <td class="action-buttons">
+                            <button class="btn btn-danger btn-sm" onclick="deleteContact('${contact.id}')">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tableHTML += '</tbody></table>';
+            contactsTableContainer.innerHTML = tableHTML;
+        }
+
+        async function loadAdminGallery() {
+            try {
+                const q = query(collection(db, "gallery"), orderBy("createdAt", "desc"));
+                const querySnapshot = await getDocs(q);
+                
+                if (querySnapshot.empty) {
+                    adminGalleryContainer.innerHTML = '<div class="text-center">No images in gallery. Add some images to get started.</div>';
+                    return;
+                }
+
+                adminGalleryContainer.innerHTML = '<div class="gallery-grid" id="adminGallery"></div>';
+                const adminGallery = document.getElementById('adminGallery');
+                
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const galleryItem = createGalleryItem(doc.id, data, true);
+                    adminGallery.appendChild(galleryItem);
+                });
+            } catch (error) {
+                console.error('Error loading admin gallery:', error);
+                adminGalleryContainer.innerHTML = '<div class="text-center">Error loading gallery.</div>';
+            }
+        }
+
+        function createGalleryItem(id, data, isAdmin = false) {
+            const div = document.createElement('div');
+            div.className = 'gallery-item';
+            div.innerHTML = `
+                <img src="${data.imageUrl}" alt="${data.title}" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Not+Found'">
+                ${isAdmin ? `
+                    <div class="gallery-actions">
+                        <button class="btn btn-danger btn-sm" onclick="deleteImage('${id}')">Delete</button>
+                    </div>
+                ` : ''}
+                <div class="gallery-content">
+                    <h4>${escapeHtml(data.title)}</h4>
+                    <p>${escapeHtml(data.description)}</p>
+                    <small>Added: ${formatDate(data.createdAt?.toDate())}</small>
+                </div>
+            `;
+            return div;
+        }
+
+        async function loadAboutForm() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "about"));
+                if (!querySnapshot.empty) {
+                    const doc = querySnapshot.docs[0];
+                    const data = doc.data();
+                    document.getElementById('aboutTitle').value = data.title || '';
+                    document.getElementById('aboutContentEditor').value = data.content || '';
+                }
+            } catch (error) {
+                console.error('Error loading about form:', error);
+            }
+        }
 
         // Global functions for delete operations
         window.deleteContact = async (id) => {
             if (confirm('Are you sure you want to delete this contact?')) {
                 try {
                     await deleteDoc(doc(db, "contacts", id));
-                    loadContacts();
+                    await loadContacts();
                 } catch (error) {
                     alert('Error deleting contact: ' + error.message);
                 }
@@ -1007,7 +1186,8 @@
             if (confirm('Are you sure you want to delete this image?')) {
                 try {
                     await deleteDoc(doc(db, "gallery", id));
-                    loadGallery();
+                    await loadAdminGallery();
+                    await loadPublicGallery();
                 } catch (error) {
                     alert('Error deleting image: ' + error.message);
                 }
@@ -1033,6 +1213,42 @@
                 .replace(/"/g, "&quot;")
                 .replace(/'/g, "&#039;");
         }
+
+        function showMessage(element, text, type) {
+            element.textContent = text;
+            element.className = `message ${type}`;
+            element.style.display = 'block';
+        }
+
+        function hideMessage(element) {
+            element.style.display = 'none';
+        }
+
+        function showLoading(button) {
+            button.disabled = true;
+            button.dataset.originalText = button.textContent;
+            button.innerHTML = '<div class="spinner" style="width: 20px; height: 20px; border-width: 2px;"></div> Loading...';
+        }
+
+        function hideLoading(button, text) {
+            button.disabled = false;
+            button.textContent = text;
+        }
+
+        // Auth State Observer
+        onAuthStateChanged(auth, (user) => {
+            currentUser = user;
+            if (user) {
+                document.getElementById('userName').textContent = user.displayName || user.email;
+                const userAvatar = document.getElementById('userAvatar');
+                userAvatar.textContent = (user.displayName || user.email).charAt(0).toUpperCase();
+                showPage('admin');
+                loadAdminData();
+            }
+        });
+
+        // Initialize the app
+        init();
     </script>
 </body>
 </html>
